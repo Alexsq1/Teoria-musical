@@ -12,7 +12,7 @@ data Modif = Dim | Min | J | Maj | Aum  deriving (Show, Eq, Enum, Ord)
 data Intervalo = I (Int, Modif) deriving (Eq)
 
 instance Show Intervalo where
-    show (I (int, modif)) = (show int) ++ "ª " ++ (show modif)
+    show (I (int, modd)) = (show int) ++ "ª " ++ (show modd)
 
 instance Ord Intervalo where
     compare (I(n1, m1)) (I(n2, m2))
@@ -32,9 +32,9 @@ genIs :: Int -> Int -> [Intervalo]
 genIs x y = [I(n,m) | n <- [x .. y], m <- [Dim .. Aum], intervValido(I(n,m))]
 
 intervValido :: Intervalo -> Bool
-intervValido (I (num, modif))
-        | num > 8 = intervValido (I(modul, modif))
-        | otherwise = posibles `member` modif
+intervValido (I (num, modd))
+        | num > 8 = intervValido (I(modul, modd))
+        | otherwise = posibles `member` modd
     where
         posibles = modifsPosibles num
         modul = modOctava num
@@ -56,24 +56,24 @@ modifsPosibles n
 intervalo_2notas :: Nota -> Nota -> Intervalo
 intervalo_2notas n1 n2
     | n1 >= n2 = error "Intervalo igual o negativo"
-    | otherwise = I(7*escalas + i + 1, mod)
+    | otherwise = I(7*escalas + i + 1, m)
     where
-        (Nota nb1 alt1 esc1) = n1
-        (Nota nb2 alt2 esc2) = n2
+        (Nota nb1 _ esc1) = n1
+        (Nota nb2 _ esc2) = n2
         escalas = esc2 - esc1
         i = (index all_notas_basicas nb2) - (index all_notas_basicas nb1)
         iPuro = 7*escalas + i + 1
-        mod = modif iPuro (semitonosDif2Notas n1 n2)
+        m = modif iPuro (semitonosDif2Notas n1 n2)
 
 --Dado el intervalo y los semitonos, calcula el modificador
 --2º, 2 semits -> mayor
 modif :: Int -> Int -> Modif
-modif intervalo semitonosDif2Notas
+modif intervalo semitDif
     | mp !! 1 == Min = mp !! (2+ajuste)     --Si es min, maj
     | otherwise = mp !! (1+ajuste)          --Si es justa
     where
         mp = modifsPosibles intervalo
-        ajuste = semitonosDif2Notas - inter_semit_canonico (intervalo)
+        ajuste = semitDif - inter_semit_canonico (intervalo)
 
 inter_semit_canonico :: Int -> Int    --Desde intervalo
 inter_semit_canonico n
@@ -87,6 +87,8 @@ inter_semit_canonico n
         inter_semit_canonico_oct 6 = 9
         inter_semit_canonico_oct 7 = 11
         inter_semit_canonico_oct 8 = 12
+	-- should not happend, but avoids a warning
+        inter_semit_canonico_oct _ = 0
 
 --semits_de_intervalo :: Intervalo -> Int
 --semits_de_intervalo I(n,m) = inter_semit_canonico n + 
@@ -113,21 +115,21 @@ semits_de_intervalo (I(n,m))
 --falla
 --usar semits de intervalo e inter semit canonico
 calcIntervalo :: Nota -> Intervalo -> Nota
-calcIntervalo n (I(interv, mod))
-    | not (intervValido (I(interv,mod))) = error "Intervalo no válido"
+calcIntervalo n (I(interv, m))
+    | not (intervValido (I(interv, m))) = error "Intervalo no válido"
     | otherwise = alterar nmid ajuste
 --    | (!!) xs 1 == J = alterar (canonic_calc_intervalo n interv) (posx - 1)
 --    | otherwise = alterar (canonic_calc_intervalo n interv) (posx - 2)    | 
     where
         nmid = canonic_calc_intervalo n interv
-        real = semits_de_intervalo (I(interv, mod))
+        real = semits_de_intervalo (I(interv, m))
         estim = semits_de_intervalo (intervalo_2notas n nmid)
         ajuste = real - estim
 --        xs = modifsPosibles interv
   --      posx = index xs mod
 
 canonic_calc_intervalo :: Nota -> Int -> Nota
-canonic_calc_intervalo (Nota n alt oct) interv 
+canonic_calc_intervalo (Nota n _ oct) interv 
     | otherwise = newNote n2 alt2 oct2
     where
         i1 = index all_notas_basicas n

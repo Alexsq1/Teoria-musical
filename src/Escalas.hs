@@ -1,7 +1,6 @@
 module Escalas where
 
 import Data.List
-import Util
 import Notas
 import Intervalos
 import Acordes

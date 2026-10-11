@@ -25,8 +25,9 @@ trDisminuida :: Nota -> [Nota]
 trDisminuida = acordeTriada [Min, Dim]
 
 generarIntervalos :: [Nota] -> [Intervalo]
-generarIntervalos xs = map (intervalo_2notas head) tail
-    where (head:tail) = xs
+generarIntervalos [] = []
+generarIntervalos xs = map (intervalo_2notas h) t
+    where (h:t) = xs
 
 aplicarIntervalos :: [Intervalo] -> Nota -> [Nota]
 aplicarIntervalos xs n

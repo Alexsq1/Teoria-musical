@@ -15,12 +15,12 @@ type Octava = Int
 data Nota = Nota {nota :: BPC, alt :: Alteracion, octava :: Octava} deriving (Eq)
 
 newNote :: BPC -> Alteracion -> Octava -> Nota
-newNote n alt oct = Nota {nota = n, alt = alt, octava = oct}
+newNote n a oct = Nota {nota = n, alt = a, octava = oct}
 
 generarAsc :: [BPC] -> [Nota]
 generarAsc = generarAscAux 0
     where
-        generarAscAux n [] = []
+        generarAscAux _ [] = []
         generarAscAux n [x] = [newNote x N n]
         generarAscAux n (x:y:xs)
             | x > y = (newNote x N n) : generarAscAux (n+1) (y:xs)
@@ -28,10 +28,10 @@ generarAsc = generarAscAux 0
         
 
 instance Show Nota where
-    show (Nota nota alteracion octava) = show nota ++ show alteracion ++ show octava
+    show (Nota n alteracion o) = show n ++ show alteracion ++ show o
 
 showNotaAmericano :: Nota -> String
-showNotaAmericano (Nota no alteracion octava) = show (tradicional_a_americano no) ++ show alteracion ++ show octava
+showNotaAmericano (Nota no alteracion oct) = show (tradicional_a_americano no) ++ show alteracion ++ show oct
 
 instance Show Alteracion where
     show BB = "♭♭"
@@ -59,6 +59,7 @@ alt_to_semit a = index all_alteraciones a - 2
 nota_to_PC :: Nota -> Int
 nota_to_PC (Nota n a e) = notabasica_to_pc n + alt_to_semit a + 12 * e
     where
+        notabasica_to_pc :: BPC -> Int
         notabasica_to_pc nb
             | nb == Do = 0
             | nb == Re = 2
@@ -67,6 +68,8 @@ nota_to_PC (Nota n a e) = notabasica_to_pc n + alt_to_semit a + 12 * e
             | nb == Sol = 7
             | nb == La = 9
             | nb == Si = 11
+	    -- should not happen, avoids warning
+	    | otherwise = 0
 
 all_notas_basicas :: [BPC]
 all_notas_basicas = [Do .. ]
@@ -79,8 +82,8 @@ all_alteraciones = [BB .. ]
 
 
 tradicional_a_americano :: BPC -> APC
-tradicional_a_americano nota = all_notas_americanas !! i
-    where i = index all_notas_basicas nota
+tradicional_a_americano n = all_notas_americanas !! i
+    where i = index all_notas_basicas n
 
 alterar :: Nota -> Int -> Nota
 alterar n x 
